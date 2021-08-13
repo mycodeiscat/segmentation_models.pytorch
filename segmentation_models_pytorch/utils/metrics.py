@@ -3,26 +3,6 @@ from . import functional as F
 from ..base.modules import Activation
 
 
-class IoU(base.Metric):
-    __name__ = 'iou_score'
-
-    def __init__(self, eps=1e-7, threshold=0.5, activation=None, ignore_channels=None, **kwargs):
-        super().__init__(**kwargs)
-        self.eps = eps
-        self.threshold = threshold
-        self.activation = Activation(activation)
-        self.ignore_channels = ignore_channels
-        self.class_weights= class_weights
-
-    def forward(self, y_pr, y_gt):
-        y_pr = self.activation(y_pr)
-        return F.iou(
-            y_pr, y_gt,
-            eps=self.eps,
-            threshold=self.threshold,
-            ignore_channels=self.ignore_channels,
-        )
-    
 class mIoU(base.Metric):
     __name__ = 'mean_iou_score'
 
@@ -44,6 +24,25 @@ class mIoU(base.Metric):
             ignore_channels=self.ignore_channels,
         )
 
+class IoU(base.Metric):
+    __name__ = 'iou_score'
+
+    def __init__(self, eps=1e-7, threshold=0.5, activation=None, ignore_channels=None, **kwargs):
+        super().__init__(**kwargs)
+        self.eps = eps
+        self.threshold = threshold
+        self.activation = Activation(activation)
+        self.ignore_channels = ignore_channels
+        self.class_weights= class_weights
+
+    def forward(self, y_pr, y_gt):
+        y_pr = self.activation(y_pr)
+        return F.iou(
+            y_pr, y_gt,
+            eps=self.eps,
+            threshold=self.threshold,
+            ignore_channels=self.ignore_channels,
+        )
 
 class Fscore(base.Metric):
 
