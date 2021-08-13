@@ -17,7 +17,7 @@ def _threshold(x, threshold=None):
         return x
 
 
-def iou(pr, gt, eps=1e-7, threshold=None, ignore_channels=None):
+def iou(pr, gt, eps=1e-7, threshold=None, per_image=False, class_weights=1, class_indexes=None, ignore_channels=None):
     """Calculate Intersection over Union between ground truth and prediction
     Args:
         pr (torch.Tensor): predicted tensor
@@ -31,15 +31,23 @@ def iou(pr, gt, eps=1e-7, threshold=None, ignore_channels=None):
     pr = _threshold(pr, threshold=threshold)
     pr, gt = _take_channels(pr, gt, ignore_channels=ignore_channels)
 
-    intersection = torch.sum(gt * pr)
-    union = torch.sum(gt) + torch.sum(pr) - intersection + eps
-    return (intersection + eps) / union
+    intersection = torch.sum(gt * pr, axis=(2, 3))
+    union = torch.sum(gt, axis=(2, 3)) + torch.sum(pr, axis=(2, 3)) - intersection + eps
+    score = (intersection + eps) / (union + eps)
+    score = average(score, per_image, class_weights)
+    return score
 
 
 jaccard = iou
 
+def average(x, per_image=False, class_weights=None):
+    if per_image:
+        x = torch.mean(x, axis=0)
+    if class_weights is not None:
+        x = x * torch.tensor(class_weights, dtype = torch.float).to('cuda')
+    return torch.mean(x)
 
-def f_score(pr, gt, beta=1, eps=1e-7, threshold=None, ignore_channels=None):
+def f_score(pr, gt, beta=1, eps=1e-7, per_image=False, threshold=None, ignore_channels=None, class_weights=1, class_indexes=None):
     """Calculate F-score between ground truth and prediction
     Args:
         pr (torch.Tensor): predicted tensor
@@ -50,17 +58,15 @@ def f_score(pr, gt, beta=1, eps=1e-7, threshold=None, ignore_channels=None):
     Returns:
         float: F score
     """
-
     pr = _threshold(pr, threshold=threshold)
     pr, gt = _take_channels(pr, gt, ignore_channels=ignore_channels)
-
-    tp = torch.sum(gt * pr)
-    fp = torch.sum(pr) - tp
-    fn = torch.sum(gt) - tp
+    tp = torch.sum(gt * pr, axis=(2, 3))
+    fp = torch.sum(pr, axis=(2, 3)) - tp
+    fn = torch.sum(gt, axis=(2, 3)) - tp
 
     score = ((1 + beta ** 2) * tp + eps) \
             / ((1 + beta ** 2) * tp + beta ** 2 * fn + fp + eps)
-
+    score = average(score, per_image, class_weights)
     return score
 
 

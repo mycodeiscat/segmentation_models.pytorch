@@ -25,10 +25,13 @@ class JaccardLoss(base.Loss):
 
 class DiceLoss(base.Loss):
 
-    def __init__(self, eps=1., beta=1., activation=None, ignore_channels=None, **kwargs):
+    def __init__(self, eps=1., beta=1., class_weights=None, class_indexes=None, per_image=False, activation=None, ignore_channels=None, **kwargs):
         super().__init__(**kwargs)
         self.eps = eps
         self.beta = beta
+        self.class_weights = class_weights if class_weights is not None else 1
+        self.class_indexes = class_indexes
+        self.per_image = per_image
         self.activation = Activation(activation)
         self.ignore_channels = ignore_channels
 
@@ -38,8 +41,11 @@ class DiceLoss(base.Loss):
             y_pr, y_gt,
             beta=self.beta,
             eps=self.eps,
+            per_image=self.per_image,
             threshold=None,
             ignore_channels=self.ignore_channels,
+            class_weights=self.class_weights,
+            class_indexes=self.class_indexes,
         )
 
 
