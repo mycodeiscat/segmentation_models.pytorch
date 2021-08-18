@@ -29,7 +29,7 @@ class DiceLoss(base.Loss):
         super().__init__(**kwargs)
         self.eps = eps
         self.beta = beta
-        self.class_weights = class_weights if class_weights is not None else 1
+        self.class_weights = torch.tensor(class_weights, dtype = torch.float).to('cuda') if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.per_image = per_image
         self.activation = Activation(activation)

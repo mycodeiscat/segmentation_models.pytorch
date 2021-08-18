@@ -44,7 +44,7 @@ def average(x, per_image=False, class_weights=None):
     if per_image:
         x = torch.mean(x, axis=0)
     if class_weights is not None:
-        x = x * torch.tensor(class_weights, dtype = torch.float).to('cuda')
+        x = x * class_weights
     return torch.mean(x)
 
 def f_score(pr, gt, beta=1, eps=1e-7, per_image=False, threshold=None, ignore_channels=None, class_weights=1, class_indexes=None):
