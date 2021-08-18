@@ -12,7 +12,7 @@ class mIoU(base.Metric):
         self.threshold = threshold
         self.activation = Activation(activation)
         self.ignore_channels = ignore_channels
-        self.class_weights = torch.tensor(class_weights, dtype = torch.float).to('cuda') if class_weights is not None else 1
+        self.class_weights = class_weights
 
     def forward(self, y_pr, y_gt):
         y_pr = self.activation(y_pr)
